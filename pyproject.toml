@@ -1,0 +1,18 @@
+[project]
+name = "goit-pythonweb-hw-03"
+version = "0.0.1"
+description = ""
+authors = [
+    {name = "Anastasiia-Bondarchuk",email = "125996065+AnastasiaBndr@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "requests (>=2.32.5,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
