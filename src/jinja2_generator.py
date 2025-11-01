@@ -1,3 +1,6 @@
+from jinja2 import Template
+
+template_string = """"
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -5,6 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <!-- CSS only -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -26,45 +30,17 @@
           <div class="collapse navbar-collapse" id="navbarsExample02">
             <ul class="navbar-nav me-auto">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">Home</a>
+                <a class="nav-link active" aria-current="page" href="#">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Send message</a>
+                <a class="nav-link" href="/message.html">Send message</a>
               </li>
             </ul>
           </div>
         </div>
       </nav>
-    </header>
-    <div class="container mt-3">
-      <main class="form-signin w-50 m-auto">
-        <form action="/message" method="POST">
-          <h1 class="h3 mb-3 fw-normal">Please send me message</h1>
 
-          <div class="row mb-3">
-            <label for="floatingInput">Your nickname</label>
-            <input
-              type="text"
-              class="form-control"
-              id="floatingInput"
-              name="username"
-            />
-          </div>
-
-          <div class="row mb-3 h-100">
-            <label for="floatingTextarea">Message</label>
-            <textarea
-              class="form-control"
-              id="floatingTextarea"
-              name="message"
-            ></textarea>
-          </div>
-
-          <button class="w-100 btn btn-lg btn-primary" type="submit">
-            Send
-          </button>
-        </form>
-        <h2>Messages</h2>
+      <h2>Messages</h2>
         <ul>
           {% for timestamp, msg_data in messages.items() %}
           <li>
@@ -76,7 +52,16 @@
           <li>Немає повідомлень 😢</li>
           {% endfor %}
         </ul>
-      </main>
-    </div>
+    </header>
   </body>
 </html>
+  """
+
+
+def jinja2_generator(messages):
+    
+    template = Template(template_string)
+
+    rendered_document = template.render(messages)
+
+    return rendered_document

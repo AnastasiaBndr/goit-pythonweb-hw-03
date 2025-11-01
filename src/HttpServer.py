@@ -1,18 +1,14 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from jinja2 import Environment, FileSystemLoader
 import os
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+import json
+from .write_JSON import write_JSON
+from .str_to_datetime import str_to_datetime
 
 jinja_env = Environment(
-    loader=FileSystemLoader(os.path.join(
-        os.path.dirname(__file__), '..', 'pages')),
-    autoescape=select_autoescape(['html'])
+    loader=FileSystemLoader('pages'),
 )
-
-messages = [
-    "Привіт!",
-    "Це тестове повідомлення",
-    "Jinja2 працює!"
-]
+jinja_env.filters['to_datetime'] = str_to_datetime
 
 
 class HttpServer(BaseHTTPRequestHandler):
@@ -26,26 +22,45 @@ class HttpServer(BaseHTTPRequestHandler):
         self.send_response(404)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
+
+        error_page = os.path.join("pages", "error.html")
         try:
-            template = jinja_env.get_template('error.html')
-            self.wfile.write(template.render().encode('utf-8'))
-        except:
-            self.wfile.write(b'404 - Not Found')
+            with open(error_page, "rb") as f:
+                self.wfile.write(f.read())
+        except Exception as e:
+            print(f"Failed! {e}")
 
     def _render_template(self, template_name, **kwargs):
         try:
             template = jinja_env.get_template(template_name)
+            html = template.render(**kwargs)
             self._set_successful_response()
-            self.wfile.write(template.render(**kwargs).encode('utf-8'))
+            self.wfile.write(html.encode('utf-8'))
         except Exception as e:
             print(f"Template error: {e}")
             self._set_failed_response()
 
     def do_GET(self):
+
+        path = self.path
+        if path == '/':
+            path = '/index.html'
+
+        if path == '/message.html':
+            try:
+                with open(os.path.join("storage", "data.json"), "r", encoding='utf-8') as f:
+                    messages = json.load(f)
+            except Exception as e:
+                print(f"Failed to load JSON: {e}")
+                messages = {}
+
+            self._render_template('message.html', messages=messages)
+            return
+
+        path_name = path.lstrip("/")
+
         try:
-            if self.path=='/':
-                self.path='/index.html'
-            self._render_template(self.path[1:], messages=messages)
+            self._render_template(path_name)
         except:
             self._set_failed_response()
 
@@ -54,11 +69,15 @@ class HttpServer(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length).decode('utf-8')
         print(f"Received POST data: {post_data}")
 
-        messages.append(post_data)
+        data_path = os.path.join("storage", "data.json")
 
-        self._set_successful_response()
-        self.wfile.write(
-            f"POST request for {self.path} received".encode('utf-8'))
+        write_JSON(post_data, data_path)
+
+        self.send_response(301)
+        self.send_header('Location', 'message.html')
+        self.end_headers()
+        # self.wfile.write(
+        #     f"POST request for {self.path} received. \n Data: {post_data}".encode('utf-8'))
 
 
 def run(server_class=HTTPServer, handler_class=HttpServer, port=3000):

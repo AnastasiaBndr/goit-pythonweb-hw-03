@@ -16,3 +16,8 @@ body {
 textarea {
   height: 250px;
 }
+
+.message-time {
+  color: gray;
+  font-size: 10px;
+}
